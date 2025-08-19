@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
-@NoArgsConstructor      // добавь это
+@NoArgsConstructor
 @Builder
 public class User {
     private int id;
