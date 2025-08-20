@@ -6,6 +6,10 @@ import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import java.time.Duration;
+import org.openqa.selenium.By;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import static org.openqa.selenium.support.ui.ExpectedConditions.*;
 
 import static constants.CommonConstants.UI_BASE_URL;
 import static org.assertj.core.api.Assertions.assertThat;

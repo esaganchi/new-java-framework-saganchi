@@ -32,6 +32,8 @@ dependencies {
     // https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-java
     implementation("org.seleniumhq.selenium:selenium-java:4.35.0")
     testImplementation 'org.assertj:assertj-core:3.27.3'
+    // https://mvnrepository.com/artifact/org.aeonbits.owner/owner
+    implementation("org.aeonbits.owner:owner:1.0.4")
 }
 
 test {
