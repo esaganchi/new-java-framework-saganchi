@@ -31,6 +31,12 @@ dependencies {
     implementation "io.qameta.allure:allure-rest-assured:${allureVersion}"
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
 test {
     useJUnitPlatform()
     systemProperties(System.getProperties())
