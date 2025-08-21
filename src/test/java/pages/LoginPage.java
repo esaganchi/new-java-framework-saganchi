@@ -6,6 +6,8 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import io.qameta.allure.Step;
+
 
 public class LoginPage extends BasePage {
     TestPropertiesConfig configProperties = ConfigFactory.create(TestPropertiesConfig.class, System.getProperties());
@@ -25,6 +27,7 @@ public class LoginPage extends BasePage {
         driver.get(configProperties.getUiBaseUrl() + "login-form.html");
     }
 
+    @Step("Login with valid user and password")
     public void login() {
         usernameInput.sendKeys(VALID_USER);
         passwordInput.sendKeys(VALID_PASSWORD);
