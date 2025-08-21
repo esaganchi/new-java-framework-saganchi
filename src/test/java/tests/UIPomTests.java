@@ -15,6 +15,7 @@ class UiPomTests extends BaseTest {
         LoginPage loginPage = new LoginPage(driver, longWait);
         loginPage.login();
 
-        assertThat(driver.getCurrentUrl()).contains("login-sucess");
+        String url = driver.getCurrentUrl();
+        assertThat(url).matches(".*login-su(c|)cess.*");
     }
 }

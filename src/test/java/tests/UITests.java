@@ -8,6 +8,9 @@ import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import java.time.Duration;
 
 import static constants.CommonConstants.UI_BASE_URL;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,14 +29,25 @@ class UiTests extends BaseTest {
         Assertions.assertEquals("Form submitted", title.getText());
     }
 
+
+//    void loadingImagesImplicitWaitTest() {
+//        driver.get("https://bonigarcia.dev/selenium-webdriver-java/loading-images.html");
     @Test
     void loadingImagesImplicitWaitTest() {
         driver.get("https://bonigarcia.dev/selenium-webdriver-java/loading-images.html");
+//        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(5));
 
-        WebElement compass = driver.findElement(By.id("compass"));
-        WebElement calendar = driver.findElement(By.id("calendar"));
-        WebElement award = driver.findElement(By.id("award"));
-        WebElement landscape = driver.findElement(By.id("landscape"));
+
+//        WebElement compass = driver.findElement(By.id("compass"));
+//        WebElement calendar = driver.findElement(By.id("calendar"));
+//        WebElement award = driver.findElement(By.id("award"));
+//        WebElement landscape = driver.findElement(By.id("landscape"));
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebElement calendar = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("calendar")));
+        WebElement compass  = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("compass")));
+        WebElement award    = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("award")));
+        WebElement landscape= wait.until(ExpectedConditions.presenceOfElementLocated(By.id("landscape")));
 
         SoftAssertions softly = new SoftAssertions();
         softly.assertThat(compass.getAttribute("src")).containsIgnoringCase("compass");
