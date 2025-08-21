@@ -1,16 +1,14 @@
 package tests;
 
-import org.assertj.core.api.SoftAssertions;
-import org.junit.jupiter.api.Assertions;
+import io.qameta.allure.Story;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 import pages.LoginPage;
 
-import static constants.CommonConstants.UI_BASE_URL;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Story("UI POM tests")
+@Tag("ui")
 class UiPomTests extends BaseTest {
     @Test
     void loginPomTest() {

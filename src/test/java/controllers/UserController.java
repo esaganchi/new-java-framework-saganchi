@@ -5,6 +5,9 @@ import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import models.User;
 import org.aeonbits.owner.ConfigFactory;
+import io.qameta.allure.restassured.AllureRestAssured;
+import org.checkerframework.checker.units.qual.A;
+
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
@@ -18,7 +21,8 @@ public class UserController {
         this.requestSpecification = given()
                 .accept(JSON)
                 .contentType(JSON)
-                .baseUri(configProperties.getApiBaseUrl());
+                .baseUri(configProperties.getApiBaseUrl())
+                .filter(new AllureRestAssured());
     }
 
     public Response createUser(User user) {
