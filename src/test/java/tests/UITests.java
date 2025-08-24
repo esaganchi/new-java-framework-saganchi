@@ -24,10 +24,17 @@ class UiTests extends BaseTest {
         driver.findElement(By.linkText("Web form")).click();
         driver.findElement(By.id("my-text-id")).sendKeys("Text");
         driver.findElement(By.xpath("//button[@type = 'submit']")).click();
-        WebElement title = driver.findElement(By.className("display-6"));
 
-        Assertions.assertEquals("Form submitted", title.getText());
+//        WebElement title = driver.findElement(By.className("display-6"));
+//        Assertions.assertEquals("Form submitted", title.getText());
+        new WebDriverWait(driver, Duration.ofSeconds(5))
+                .until(ExpectedConditions.textToBePresentInElementLocated(
+                        By.className("display-6"), "Form submitted"));
+
+        Assertions.assertEquals("Form submitted",
+                driver.findElement(By.className("display-6")).getText());
     }
+
 
 
 //    void loadingImagesImplicitWaitTest() {
