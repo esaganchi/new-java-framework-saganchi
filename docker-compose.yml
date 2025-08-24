@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  # Selenium Hub
+  selenium-hub:
+    image: selenium/hub:4.28.1
+    container_name: selenium-hub
+    ports:
+      - "4442:4442"
+      - "4443:4443"
+      - "4444:4444"
+    environment:
+      - GRID_MAX_SESSION=16
+      - GRID_BROWSER_TIMEOUT=300
+      - GRID_TIMEOUT=300
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4444/wd/hub/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Chrome Node
+  chrome:
+    image: selenium/node-chrome:4.28.1
+    shm_size: 2gb
+    depends_on:
+      selenium-hub:
+        condition: service_healthy
+    environment:
+      - HUB_HOST=selenium-hub
+      - HUB_PORT=4444
+      - NODE_MAX_INSTANCES=2
+      - NODE_MAX_SESSION=2
+    scale: 2
+
+  # Firefox Node (опционально)
+  firefox:
+    image: selenium/node-firefox:4.28.1
+    shm_size: 2gb
+    depends_on:
+      selenium-hub:
+        condition: service_healthy
+    environment:
+      - HUB_HOST=selenium-hub
+      - HUB_PORT=4444
+      - NODE_MAX_INSTANCES=1
+      - NODE_MAX_SESSION=1
+    scale: 1
+
+  # Тестовое приложение
+  test-app:
+    build: .
+    container_name: test-runner
+    depends_on:
+      selenium-hub:
+        condition: service_healthy
+    environment:
+      - SELENIUM_REMOTE_URL=http://selenium-hub:4444/wd/hub
+      - JAVA_OPTS=-Xmx2g -Xms1g
+    volumes:
+      - ./build/allure-results:/app/build/allure-results
+      - ./build/reports:/app/build/reports
+    command: ["test", "--no-daemon", "-Dselenium.grid.enabled=true"]
+
+  # Allure сервер для отчетов
+  allure:
+    image: frankescobar/allure-docker-service
+    container_name: allure-server
+    ports:
+      - "5050:5050"
+    environment:
+      CHECK_RESULTS_EVERY_SECONDS: 3
+      KEEP_HISTORY: 20
+    volumes:
+      - ./build/allure-results:/app/allure-results
+      - ./build/allure-reports:/app/default-reports
+    depends_on:
+      - test-app
+
+networks:
+  default:
+    name: selenium-grid
