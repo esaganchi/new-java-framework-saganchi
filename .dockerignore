@@ -1,0 +1,39 @@
+# Игнорировать файлы сборки
+build/
+.gradle/
+gradle-app.setting
+
+# Игнорировать IDE файлы
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.project
+.classpath
+
+# Игнорировать временные файлы
+*.log
+*.tmp
+*~
+.DS_Store
+Thumbs.db
+
+# Игнорировать файлы отчетов
+allure-results/
+test-output/
+screenshots/
+
+# Игнорировать файлы Docker
+docker-compose.yml
+Dockerfile
+.dockerignore
+
+# Игнорировать Git
+.git/
+.gitignore
+
+# Игнорировать документацию
+README*.md
+docs/
