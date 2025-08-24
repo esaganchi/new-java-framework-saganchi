@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -18,37 +19,37 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Story("UI tests")
 @Tag("ui")
 class UiTests extends BaseTest {
+
     @Test
     void submitWebFormTest() {
         driver.get(UI_BASE_URL);
-        driver.findElement(By.linkText("Web form")).click();
-        driver.findElement(By.id("my-text-id")).sendKeys("Text");
-        driver.findElement(By.xpath("//button[@type = 'submit']")).click();
 
-//        WebElement title = driver.findElement(By.className("display-6"));
-//        Assertions.assertEquals("Form submitted", title.getText());
-        new WebDriverWait(driver, Duration.ofSeconds(5))
-                .until(ExpectedConditions.textToBePresentInElementLocated(
-                        By.className("display-6"), "Form submitted"));
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+        // Кликаем по ссылке "Web form"
+        WebElement webFormLink = wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Web form")));
+        webFormLink.click();
+
+        // Вводим текст в поле
+        WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("my-text-id")));
+        input.sendKeys("Text");
+
+        // Кликаем по кнопке сабмита (с прокруткой в центр экрана)
+        WebElement submitBtn = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[@type='submit']")));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block:'center'});", submitBtn);
+        submitBtn.click();
+
+        // Ждём появления текста и проверяем
+        wait.until(ExpectedConditions.textToBePresentInElementLocated(
+                By.className("display-6"), "Form submitted"));
 
         Assertions.assertEquals("Form submitted",
                 driver.findElement(By.className("display-6")).getText());
     }
 
-
-
-//    void loadingImagesImplicitWaitTest() {
-//        driver.get("https://bonigarcia.dev/selenium-webdriver-java/loading-images.html");
     @Test
     void loadingImagesImplicitWaitTest() {
         driver.get("https://bonigarcia.dev/selenium-webdriver-java/loading-images.html");
-//        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(5));
-
-
-//        WebElement compass = driver.findElement(By.id("compass"));
-//        WebElement calendar = driver.findElement(By.id("calendar"));
-//        WebElement award = driver.findElement(By.id("award"));
-//        WebElement landscape = driver.findElement(By.id("landscape"));
 
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         WebElement calendar = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("calendar")));
