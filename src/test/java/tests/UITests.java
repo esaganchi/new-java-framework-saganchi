@@ -26,20 +26,21 @@ class UiTests extends BaseTest {
 
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
-        // Кликаем по ссылке "Web form"
+        // Переход на страницу формы
         WebElement webFormLink = wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Web form")));
         webFormLink.click();
 
-        // Вводим текст в поле
+        // Ввод текста
         WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("my-text-id")));
         input.sendKeys("Text");
 
-        // Кликаем по кнопке сабмита (с прокруткой в центр экрана)
-        WebElement submitBtn = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[@type='submit']")));
-        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block:'center'});", submitBtn);
-        submitBtn.click();
+        // Кнопка сабмита + защита от перекрытий
+        WebElement submitBtn = wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//button[@type='submit']")));
+        waitOverlaysGone(); // если на странице появляются модалки/лоадеры
+        scrollCenter(submitBtn);
+        safeClick(submitBtn);
 
-        // Ждём появления текста и проверяем
+        // Ожидание результата
         wait.until(ExpectedConditions.textToBePresentInElementLocated(
                 By.className("display-6"), "Form submitted"));
 
@@ -52,10 +53,10 @@ class UiTests extends BaseTest {
         driver.get("https://bonigarcia.dev/selenium-webdriver-java/loading-images.html");
 
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        WebElement calendar = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("calendar")));
-        WebElement compass  = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("compass")));
-        WebElement award    = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("award")));
-        WebElement landscape= wait.until(ExpectedConditions.presenceOfElementLocated(By.id("landscape")));
+        WebElement calendar  = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("calendar")));
+        WebElement compass   = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("compass")));
+        WebElement award     = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("award")));
+        WebElement landscape = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("landscape")));
 
         SoftAssertions softly = new SoftAssertions();
         softly.assertThat(compass.getAttribute("src")).containsIgnoringCase("compass");
@@ -71,5 +72,26 @@ class UiTests extends BaseTest {
 
         WebElement landscape = longWait.until(ExpectedConditions.presenceOfElementLocated(By.id("landscape")));
         assertThat(landscape.getAttribute("src")).containsIgnoringCase("landscape");
+    }
+
+    // ----------------- helpers -----------------
+
+    private void scrollCenter(WebElement el) {
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block:'center'});", el);
+    }
+
+    /** Ждём исчезновения возможных перекрытий; при необходимости подставь точные селекторы своего проекта */
+    private void waitOverlaysGone() {
+        new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.invisibilityOfElementLocated(
+                By.cssSelector(".modal-backdrop, .overlay, .spinner, .loader, [aria-busy='true']")));
+    }
+
+    /** Пытаемся кликнуть нормально; если что-то перехватило — делаем JS-клик */
+    private void safeClick(WebElement el) {
+        try {
+            new WebDriverWait(driver, Duration.ofSeconds(5)).until(ExpectedConditions.elementToBeClickable(el)).click();
+        } catch (org.openqa.selenium.ElementClickInterceptedException e) {
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", el);
+        }
     }
 }
