@@ -1,22 +1,24 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-# This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
-
-name: Run all tests
+name: Run tests & publish Allure
 
 on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
   workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pages: write
 
     services:
       selenium:
@@ -26,56 +28,58 @@ jobs:
           - 4444:4444
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    # Configure Gradle for optimal use in GitHub Actions, including caching of downloaded dependencies.
-    # See: https://github.com/gradle/actions/blob/main/setup-gradle/README.md
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
 
-    - name: Grant execute permission for Gradle
-      run: chmod +x gradlew
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
 
-    - name: Build with Gradle Wrapper
-      env:
-        SELENIUM_REMOTE_URL: http://localhost:4444/wd/hub
-      run: ./gradlew clean test
+      - name: Grant execute permission for Gradle
+        run: chmod +x gradlew
 
-    # NOTE: The Gradle Wrapper is the default and recommended way to run Gradle (https://docs.gradle.org/current/userguide/gradle_wrapper.html).
-    # If your project does not have the Gradle Wrapper configured, you can use the following configuration to run Gradle with a specified version.
-    #
-    # - name: Setup Gradle
-    #   uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
-    #   with:
-    #     gradle-version: '8.9'
-    #
-    # - name: Build with Gradle 8.9
-    #   run: gradle build
+      - name: Run tests
+        env:
+          SELENIUM_REMOTE_URL: http://localhost:4444/wd/hub
+        run: ./gradlew clean test
 
-    - name: Copy History
-      uses: actions/checkout@v2
-      if: always()
-      with:
-        ref: gh-pages
-        path: gh-pages
-        
-    - name: Build Report
-      uses: simple-elf/allure-report-action@v1.10
-      if: always()
-      with:
-        allure_results: build/allure-results
-        allure_history: allure-history
-        keep_reports: 20
-        
-    - name: Publish Report
-      if: always()
-      uses: peaceiris/actions-gh-pages@v2
-      env:
-        PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        PUBLISH_BRANCH: gh-pages
-        PUBLISH_DIR: allure-history
+      # Сборка Allure из build/allure-results -> allure-history
+      - name: Build Allure report
+        if: always()
+        uses: simple-elf/allure-report-action@v1.10
+        with:
+          allure_results: build/allure-results
+          allure_history: allure-history
+          keep_reports: 20
+
+      # Артефакт с отчётом (можно скачать из UI Actions)
+      - name: Upload Allure artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: allure-history
+          retention-days: 7
+
+      # Артефакт для GitHub Pages (без ветки gh-pages)
+      - name: Upload Pages artifact
+        if: always()
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: allure-history
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
